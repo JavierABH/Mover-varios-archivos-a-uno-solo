@@ -4,18 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Mover_varios_archivos_a_uno_solo
 {
     class Program
     {
+        static string path = @"C:\Users\K90011729\Documents\Log\prueba\"; // No borrar el ultimo '\'
+        static string pathFileText = @"C:\Users\K90011729\Documents\Log\prueba\"; // Ruta del archivo donde se guardara todo.
+        static string pathCSV = pathFileText + "Datos.csv";
+        static string pathExcel = pathFileText + "Datos.xlsx";
+
         static void Main(string[] args)
         {
-            string path = @"C:\Users\K90011729\Documents\Log\DATOS TE0364-BRO\"; // No borrar el ultimo '\'
-            string pathFileText = @"C:\Users\K90011729\Documents\Log\Datos.csv"; // Ruta del archivo donde se guardara todo.
             //Se escribe el rango de fechas de los archivos           
             DateTime FechaInicio = Convert.ToDateTime("01-Feb-22");
-            DateTime FechaFin = Convert.ToDateTime("10-Sep-22");
+            DateTime FechaFin = Convert.ToDateTime("10-Feb-22");
 
             string pathFile;
             StreamReader Reader;
@@ -24,7 +28,7 @@ namespace Mover_varios_archivos_a_uno_solo
             string contenidodelimitado;
             try
             {
-                Writer = File.AppendText(pathFileText);
+                Writer = File.AppendText(pathCSV);
                 string[] dato = new string[290];
                 while (true)
                 {
@@ -40,7 +44,7 @@ namespace Mover_varios_archivos_a_uno_solo
                         while (array != null)
                         {
                             dato = array.Split('	');
-                            contenidodelimitado = array.Replace('	', ';');
+                            contenidodelimitado = array.Replace('	', ',');
                             if (dato[0].Trim() != "Model No.")
                             {
                                 Writer.WriteLine(contenidodelimitado); //No copia el encabezado de los archivos
@@ -63,6 +67,13 @@ namespace Mover_varios_archivos_a_uno_solo
                 }
                 Writer.Close();
                 Console.WriteLine("Proceso completado...");
+                Console.WriteLine("Conversion csv a excel...");
+                CsvToExcel(pathCSV, pathExcel);
+                Console.WriteLine("Excel generado correctamente...");
+                Console.WriteLine("Desea borrar el archivo csv? s/n");
+                string borrarArchivo = Console.ReadLine();
+                if (borrarArchivo == "s")
+                    File.Delete(pathCSV);
                 Console.WriteLine("Presione cualquier tecla para salir...");
                 Console.ReadKey();
             }
@@ -70,6 +81,23 @@ namespace Mover_varios_archivos_a_uno_solo
             {
                 Console.WriteLine(e.Message);
             }
+        }
+        static void CsvToExcel(string csv, string xlsx)
+        {
+            Excel.Application xl = new Excel.Application();
+            //Open Excel Workbook for conversion.
+            Excel.Workbook wb = xl.Workbooks.Open(csv);
+            Excel.Worksheet ws = (Excel.Worksheet)wb.Worksheets.get_Item(1);
+            //Select The UsedRange
+            Excel.Range used = ws.UsedRange;
+            //Autofit The Columns
+            used.EntireColumn.AutoFit();
+            //Save file as csv file
+            wb.SaveAs(xlsx, 51);
+            //Close the Workbook.
+            wb.Close();
+            //Quit Excel Application.
+            xl.Quit();
         }
     }
 }
