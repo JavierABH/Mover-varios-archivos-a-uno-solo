@@ -25,12 +25,13 @@ namespace Mover_varios_archivos_a_uno_solo
             try
             {
                 Writer = File.AppendText(pathFileText);
+                string[] dato = new string[290];
                 while (true)
                 {
+                    if (FechaInicio > FechaFin)
+                        break;
                     try
                     {
-                        if (FechaInicio > FechaFin)
-                            break;
                         //leo cada archivo
                         pathFile = path + FechaInicio.ToString("MM-dd-yy") + @"\Ford P552 HVAC.dat";       // Example: 02-01-22\Ford P552 HVAC.dat
 
@@ -38,10 +39,12 @@ namespace Mover_varios_archivos_a_uno_solo
                         array = Reader.ReadLine();
                         while (array != null)
                         {
+                            dato = array.Split('	');
                             contenidodelimitado = array.Replace('	', ';');
-
-                            //Copia los registros a tmp.csv excepto los que sean iguales al serial y la estacion
-                            Writer.WriteLine(contenidodelimitado);
+                            if (dato[0].Trim() != "Model No.")
+                            {
+                                Writer.WriteLine(contenidodelimitado); //No copia el encabezado de los archivos
+                            }
                             array = Reader.ReadLine();
                         }
                         Reader.Close();
@@ -60,6 +63,7 @@ namespace Mover_varios_archivos_a_uno_solo
                 }
                 Writer.Close();
                 Console.WriteLine("Proceso completado...");
+                Console.WriteLine("Presione cualquier tecla para salir...");
                 Console.ReadKey();
             }
             catch (Exception e)
